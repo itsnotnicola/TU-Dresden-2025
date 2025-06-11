@@ -1,4 +1,13 @@
 import streamlit as st
+from google.cloud import storage
+import json
+import pandas as pd
+from awesome_table import AwesomeTable
+from awesome_table.column import Column
+
+
+BUCKET_NAME = 'hackathon-team2-bucket'
+FILE_NAME = 'all_customer_support_analysis.json'
 
 st.title('Welcome to Ottomatic Reply')
 st.write('''#### Here’s where great service starts.
@@ -9,7 +18,18 @@ We keep it efficient, empathetic, and always on-brand — just like the service 
 
 Let’s make support smarter, together.''')
 
-st.button('Load data', type='primary' )
+if st.button('Load data', type='primary' ):
+    client = storage.Client(project= 'ogcs-av8t-ailaboratory')
+    bucket = client.bucket(BUCKET_NAME)
+    blob = bucket.blob(FILE_NAME)
+
+    data = blob.download_as_text()
+    # JSON data to Python dictionary
+    data_dict = json.loads(data)
+    st.write(data_dict)
+    for key, value in data_dict.items():
+        print(f"{key}: {value}")
+
 
 import streamlit as st
 
@@ -37,3 +57,14 @@ with st.sidebar:
     st.markdown(f"Your selected options: {selection}.")
 
 st.logo('Otto_Group_Logo_2022.svg.png')
+
+sample_data = {}
+
+AwesomeTable(pd.json_normalize(sample_data), columns=[
+    Column(name='id', label='ID'),
+    Column(name='name', label='Name'),
+    Column(name='job_title', label='Job Title'),
+    Column(name='avatar', label='Avatar'),
+    Column(name='_url.social_media', label='Social Media'),
+    Column(name='_url.document', label='Document'),
+])
